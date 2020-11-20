@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+ <head><title>The Domain Specific Language</title><meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description"
+   content="An introduction to practical uses of the eDSL for OCurrent"/>
+  <link rel="stylesheet" href="/styles.css"/>
+ </head>
+ <body>
+             
+  <div class="nav"><h1 class="title"><a href="/">OCurrent Doc</a></h1>
+   <ul>
+    <li>
+     <a href="/introduction-to-incrementalism-in-ocurrent">
+      Introduction to incrementalism in OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/the-domain-specific-language"
+        >The Domain Specific Language
+       </a>
+      </li>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/a-high-level-interface"
+        >A High Level Interface
+       </a>
+      </li>
+     </ul>
+    </li>
+   </ul>
+  </div>
+  <div class="content">
+   <div class="meta"><h2>The Domain Specific Language</h2>
+    <p> By Patrick Ferris on 2020-11-20 13:38:10 +00:00</p>
+   </div>
+   <details><summary>Table of Contents</summary>
+    <ul class="toc">
+     <li>
+      <ul class="toc">
+       <li>
+        <ul class="toc">
+         <li class="toc-li">
+          <a class="toc-link toc-item-2" href="#a-simple-arithmetic-example">
+           A simple arithmetic example
+          </a>
+         </li>
+        </ul>
+        <ul class="toc">
+         <li>
+          <a class="toc-link toc-item-2" href="#abstracting-away">
+           Abstracting away
+          </a>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#term-module">Term Module
+            </a>
+           </li>
+          </ul>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#the-extra-metadata">
+             The Extra Metadata
+            </a>
+           </li>
+          </ul>
+         </li>
+        </ul>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </details>
+   <p>Largely based on the very <a href="https://github.com/ocurrent/ocurrent/wiki/Internals">excellent write-up</a> by Thomas Leonard.</p>
+<p>An embedded domain specific language (eDSL) is a set of primitive values and functions written in a host-language to enable a programming experience of a new language. For those old enough, think <code>jQuery</code>. Within OCurrent the entire eDSL lives in the <code>Current_incr</code> package.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">require</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">current_incr</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">var</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">var</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-keyword">fun</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span></code></pre><p>As with a lot of things in OCaml, the eDSL takes on this <em>monadic</em> look as it wraps things up into its on type (thinks <code>'a list</code> or <code>'a Lwt.t</code>).</p>
+<h2 id="a-simple-arithmetic-example">A simple arithmetic example</h2>
+<p>The result of a <code>plus</code> operator has two dependencies, the operands.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">plus</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">+</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword">val</span><span class="ocaml-source"> </span><span class="ocaml-source">plus</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-keyword">fun</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span></code></pre><p>Nothing too surprising here, but what if we want to make this incremental so that it updates if <code>a</code> or <code>b</code> change. At this point <code>a</code> and <code>b</code> must be incremental values (i.e. <code>int Current_incr.t</code>).</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">plus</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">let </span><span class="ocaml-keyword">open</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">    </span><span class="ocaml-source">read</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-keyword">fun</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-source">read</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-keyword">fun</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-source">write</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">+</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source">)</span><span class="ocaml-source">)</span><span class="ocaml-source">)</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> </span><span class="ocaml-source">of_cc</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword">val</span><span class="ocaml-source"> </span><span class="ocaml-source">plus</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-keyword">fun</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">var</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">3</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">val</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">var</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-source">abstr</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">var</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">6</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">val</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">var</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-source">abstr</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">c</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">(</span><span class="ocaml-source">plus</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-source">of_var</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source">)</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-source">of_var</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source">)</span><span class="ocaml-source">)</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword">val</span><span class="ocaml-source"> </span><span class="ocaml-source">c</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-source">abstr</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span></code></pre><p>Now we can actually have a look at the value we computed using the <code>observe</code> function. Most importantly we can change the dependency variables <code>a</code> and <code>b</code> to a new integer and then run <code>propagate</code> and see the incrementalism happen before our eyes!</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">observe</span><span class="ocaml-source"> </span><span class="ocaml-source">c</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">9</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">change</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">10</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">unit</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">propagate</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">unit</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">observe</span><span class="ocaml-source"> </span><span class="ocaml-source">c</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">16</span><span class="ocaml-source">
+</span></code></pre><h2 id="abstracting-away">Abstracting away</h2>
+<p>The primitives for incrementalism are small and easy to understand, but not ideal for building larger applications. For one it would be nice to know ahead of time (statically) what are computation graph looks like. It would also be nice to incorporate <code>('a, 'b) Result.t</code> style exception handling because... things go wrong.</p>
+<p>This is exactly what <code>current.term</code> and eventually <code>Current</code> do! The <code>Term</code> module provides the static analysis and error handling whilst the final user-facing <code>Current</code> module provides asynchronous computations using <code>Lwt</code> and persistent logging. But first <code>Term</code>.</p>
+<h3 id="term-module">Term Module</h3>
+<p>To build our usable <code>Term</code> module, we need to use the function <code>Current_term.Make</code>. It expects the simplest of module arguments:</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">require</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">current.term</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">show</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_term</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_term</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">sig</span><span class="ocaml-source">
+</span><span class="ocaml-source">    module S = Current_term__.S
+</span><span class="ocaml-source">    module Output = Current_term__.Output
+</span><span class="ocaml-source">    module Make : functor (Metadata : sig type t </span><span class="ocaml-keyword">end</span><span class="ocaml-source">) </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-keyword">sig</span><span class="ocaml-source"> ... </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span></code></pre><p>Something with a type <code>t</code>. This is used (as the argument name helpfully points out) for <code>Metadata</code> information. For now it isn't too important.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_term</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Make</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">Unit</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">sig</span><span class="ocaml-source">
+</span><span class="ocaml-source">    type 'a t = 'a Current_term.Make(Unit).t
+</span><span class="ocaml-source">    type description = Current_term.Make(Unit).description
+</span><span class="ocaml-source">    val active : Current_term.Output.active -&gt; 'a t
+</span><span class="ocaml-source">    val return : ?label:string -&gt; 'a -&gt; 'a t
+</span><span class="ocaml-source">    val fail : string -&gt; 'a t
+</span><span class="ocaml-source">    val state :
+</span><span class="ocaml-source">      ?hidden:bool -&gt;
+</span><span class="ocaml-source">      'a t -&gt;
+</span><span class="ocaml-source">      ('a, [ `Active of Current_term.Output.active | `Msg of string ]) result
+</span><span class="ocaml-source">      t
+</span><span class="ocaml-source">    val catch : ?hidden:bool -&gt; 'a t -&gt; 'a Current_term.S.or_error t
+</span><span class="ocaml-source">    val ignore_value : 'a t -&gt; unit t
+</span><span class="ocaml-source">    val of_output : 'a Current_term__.Output.t -&gt; 'a t
+</span><span class="ocaml-source">    val map : ('a -&gt; 'b) -&gt; 'a t -&gt; 'b t
+</span><span class="ocaml-source">    val map_error : (string -&gt; string) -&gt; 'a t -&gt; 'a t
+</span><span class="ocaml-source">    val pair : 'a t -&gt; 'b t -&gt; ('a * 'b) t
+</span><span class="ocaml-source">    val list_map :
+</span><span class="ocaml-source">      (module Current_term.S.ORDERED with type t = 'a) -&gt;
+</span><span class="ocaml-source">      ?collapse_key:string -&gt; ('a t -&gt; 'b t) -&gt; 'a list t -&gt; 'b list t
+</span><span class="ocaml-source">    val list_iter :
+</span><span class="ocaml-source">      (module Current_term.S.ORDERED with type t = 'a) -&gt;
+</span><span class="ocaml-source">      ?collapse_key:string -&gt; ('a t -&gt; unit t) -&gt; 'a list t -&gt; unit t
+</span><span class="ocaml-source">    val list_seq : 'a t list -&gt; 'a list t
+</span><span class="ocaml-source">    val option_map : ('a t -&gt; 'b t) -&gt; 'a option t -&gt; 'b option t
+</span><span class="ocaml-source">    val option_seq : 'a t option -&gt; 'a option t
+</span><span class="ocaml-source">    val all : unit t list -&gt; unit t
+</span><span class="ocaml-source">    val all_labelled : (string * unit t) list -&gt; unit t
+</span><span class="ocaml-source">    val gate : on:unit t -&gt; 'a t -&gt; 'a t
+</span><span class="ocaml-source">    val collapse : key:string -&gt; value:string -&gt; input:'b t -&gt; 'a t -&gt; 'a t
+</span><span class="ocaml-source">    val with_context : 'b t -&gt; (unit -&gt; 'a t) -&gt; 'a t
+</span><span class="ocaml-source">    val bind : ?info:description -&gt; ('a -&gt; 'b t) -&gt; 'a t -&gt; 'b t
+</span><span class="ocaml-source">    type 'a primitive =
+</span><span class="ocaml-source">        ('a Current_term.Output.t * unit option) Current_incr.t
+</span><span class="ocaml-source">    val primitive : info:description -&gt; ('a -&gt; 'b primitive) -&gt; 'a t -&gt; 'b t
+</span><span class="ocaml-source">    val component : ('a, Format.formatter, unit, description) format4 -&gt; 'a
+</span><span class="ocaml-source">    module Syntax :
+</span><span class="ocaml-source">      sig
+</span><span class="ocaml-source">        val ( let+ ) : 'a t -&gt; ('a -&gt; 'b) -&gt; 'b t
+</span><span class="ocaml-source">        val ( and+ ) : 'a t -&gt; 'b t -&gt; ('a * 'b) t
+</span><span class="ocaml-source">        val ( let* ) : 'a t -&gt; ('a -&gt; 'b t) -&gt; 'b t
+</span><span class="ocaml-source">        val ( let&gt; ) : 'a t -&gt; ('a -&gt; 'b primitive) -&gt; description -&gt; 'b t
+</span><span class="ocaml-source">        val ( let** ) : 'a t -&gt; ('a -&gt; 'b t) -&gt; description -&gt; 'b t
+</span><span class="ocaml-source">        val ( and* ) : 'a t -&gt; 'b t -&gt; ('a * 'b) t
+</span><span class="ocaml-source">        val ( and&gt; ) : 'a t -&gt; 'b t -&gt; ('a * 'b) t
+</span><span class="ocaml-source">      </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span><span class="ocaml-source">    </span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Analysis</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source">
+</span><span class="ocaml-source">      </span><span class="ocaml-keyword">sig</span><span class="ocaml-source">
+</span><span class="ocaml-source">        val metadata : 'a t -&gt; unit option t
+</span><span class="ocaml-source">        val pp : 'a t Fmt.t
+</span><span class="ocaml-source">        val pp_dot :
+</span><span class="ocaml-source">          env:(string * string) list -&gt;
+</span><span class="ocaml-source">          collapse_link:(k:string -&gt; v:string -&gt; string option) -&gt;
+</span><span class="ocaml-source">          job_info:(unit -&gt; Current_term.Output.active option * string option) -&gt;
+</span><span class="ocaml-source">          'a t Fmt.t
+</span><span class="ocaml-source">        val stats : 'a t -&gt; Current_term.S.stats
+</span><span class="ocaml-source">      </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span><span class="ocaml-source">    </span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Executor</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source">
+</span><span class="ocaml-source">      </span><span class="ocaml-keyword">sig</span><span class="ocaml-source"> val run : 'a t -&gt; 'a Current_term__.Output.t Current_incr.t </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span></code></pre><p>Now that we have a <code>Term</code> module we can rebuild our <code>plus</code> operator from earlier.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">open</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Syntax</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">plus</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">  </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">component</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">PLUS</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">let</span><span class="ocaml-keyword">** </span><span class="ocaml-entity-name">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">and</span><span class="ocaml-keyword">* </span><span class="ocaml-entity-name">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">    </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">return</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">+</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">val</span><span class="ocaml-source"> </span><span class="ocaml-source">plus</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-keyword">fun</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span></code></pre><p>Wahhh what's this crazy <code>let**</code> syntax? Since <a href="https://caml.inria.fr/pub/docs/manual-ocaml/bindingops.html">OCaml 4.08</a> we've had binding operators. Just like you can define infix operators such as <code>( &gt;&gt;= )</code> these operators are very similar except they happen on the <code>let</code> bindings.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Syntax</span><span class="ocaml-keyword">.</span><span class="ocaml-source">(</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let</span><span class="ocaml-keyword-operator">**</span><span class="ocaml-source"> </span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'b</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source">)</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">description</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'b</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-keyword">fun</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span></code></pre><p>As you can see it is just our friendly bind operator with a way for passing a description (more on that later). Give me something wrapped up in something and a function that works on the wrapped up thing, and I'll give you that function applied to the inner value wrapped up.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">res</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">    </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">3</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">return</span><span class="ocaml-source"> ~</span><span class="ocaml-source">label</span><span class="ocaml-keyword">:</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">a</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">    </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">7</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">return</span><span class="ocaml-source"> ~</span><span class="ocaml-source">label</span><span class="ocaml-keyword">:</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">a</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">    </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Executor</span><span class="ocaml-keyword">.</span><span class="ocaml-source">run</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-source">plus</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">val</span><span class="ocaml-source"> </span><span class="ocaml-source">res</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_term__</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Output</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-source">abstr</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">observe</span><span class="ocaml-source"> </span><span class="ocaml-source">res</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">int</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_term__</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Output</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Ok</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">10</span><span class="ocaml-source">
+</span></code></pre><p>Here we also see the result type making it's way in. <code>Term</code> also gives us a way to fail too.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_incr</span><span class="ocaml-keyword">.</span><span class="ocaml-source">observe</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">fail</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">Woops!</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Executor</span><span class="ocaml-keyword">.</span><span class="ocaml-source">run</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_term__</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Output</span><span class="ocaml-keyword">.</span><span class="ocaml-source">t</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Error</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">`Msg</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">Woops!</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span></code></pre><p>Of course inside a pipeline we might not know if something has failed or not, in which case we can expose the underlying result using <code>Term.catch</code> and pattern-match on <code>Ok</code> and <code>Error</code>.</p>
+<h3 id="the-extra-metadata">The Extra Metadata</h3>
+<p>One of the original goals of OCurrent was not only to build incremental pipelines but to expose them to users. The <code>Term</code> library (under the hood) is adding extra metadata and static analysis to be able to generate useful graphics and information. For example:</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">3</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">return</span><span class="ocaml-source"> ~</span><span class="ocaml-source">label</span><span class="ocaml-keyword">:</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">Operand 1</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">b</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">4</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-source">return</span><span class="ocaml-source"> ~</span><span class="ocaml-source">label</span><span class="ocaml-keyword">:</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">Operand 2</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source"> 
+</span><span class="ocaml-source">    </span><span class="ocaml-constant-language">Format</span><span class="ocaml-keyword">.</span><span class="ocaml-source">printf</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-constant-character">%a</span><span class="ocaml-string-quoted">@.</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Term</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Analysis</span><span class="ocaml-keyword">.</span><span class="ocaml-source">pp</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-source">plus</span><span class="ocaml-source"> </span><span class="ocaml-source">a</span><span class="ocaml-source"> </span><span class="ocaml-source">b</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-constant-language">Operand</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">1</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">||</span><span class="ocaml-source">
+</span><span class="ocaml-constant-language">Operand</span><span class="ocaml-source"> </span><span class="ocaml-constant-numeric">2</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&gt;&gt;=</span><span class="ocaml-source">
+</span><span class="ocaml-constant-language">PLUS</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">unit</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source">
+</span></code></pre><p>Now, hopefully, it becomes apparent why the <code>component &quot;PLUS&quot;</code> and the <code>let**</code> operator were needed.</p>
+
+   <ol>
+    <li>
+     <a href="https://www.cs.cmu.edu/~guyb/papers/popl02.pdf">
+      Adaptive Function Programming
+     </a> - The paper that the OCurrent eDSL for incrementalism is based on
+    </li>
+   </ol>
+  </div>
+            
+            
+          
+ </body>
+</html>

@@ -1,0 +1,25 @@
+opam-version: "2.0"
+synopsis: "OCurrent Documentation Site"
+description: """
+A documentation site for OCurrent. 
+
+Powered by Mdx and Sesame-doc to make sure the documentation works
+and to provide an easy interface to develop and share the docs."""
+maintainer: "pf341@patricoferris.com"
+authors: "pf341@patricoferris.com"
+homepage: "https://github.com/patricoferris/ocurrent-docs"
+bug-reports: "https://github.com/patricoferris/ocurrent-docs/issues"
+dev-repo: "git+https://github.com/patricoferris/ocurrent-docs"
+doc: "https://patricoferris.github.io/ocurrent-doc/"
+build: [
+  ["sesame-doc" "build"]
+  ["dune" "runtest"] {with-test}
+]
+depends: [
+  "current"
+  "sesame-doc"
+  "mdx" {with-test}
+]
+pin-depends: [
+  ["sesame-doc.dev" "git+https://github.com/patricoferris/sesame"]
+]
