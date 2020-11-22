@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+ <head><title>Basic OCurrent Primitives</title><meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description"
+   content="A look at the core components of building OCurrent plugins"/>
+  <link rel="stylesheet" href="/styles.css"/>
+ </head>
+ <body>
+             
+  <div class="nav"><h1 class="title"><a href="/">OCurrent Doc</a></h1>
+   <ul>
+    <li>
+     <a href="/introduction-to-incrementalism-in-ocurrent">
+      Introduction to incrementalism in OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/the-domain-specific-language"
+        >The Domain Specific Language
+       </a>
+      </li>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/a-high-level-interface"
+        >A High Level Interface
+       </a>
+      </li>
+      <li>
+       <a href="/introduction-to-incrementalism-in-ocurrent/using-plugins">
+        Using plugins
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li>
+     <a href="/build-a-website-deployer-with-ocurrent">
+      Build a website deployer with OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/build-a-website-deployer-with-ocurrent/a-gatsby-site-deployer">
+        A Gatsby Site Deployer
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/create-an-ocurrent-plugin">Create an OCurrent Plugin</a>
+     <ul>
+      <li>
+       <a href="/create-an-ocurrent-plugin/basic-ocurrent-primitives">
+        Basic OCurrent Primitives
+       </a>
+      </li>
+      <li>
+       <a href="/create-an-ocurrent-plugin/build-a-gitlab-ocurrent-plugin">
+        Build a Gitlab OCurrent Plugin
+       </a>
+      </li>
+     </ul>
+    </li>
+   </ul>
+  </div>
+  <div class="content">
+   <div class="meta"><h2>Basic OCurrent Primitives</h2>
+    <p> By Patrick Ferris on 2020-11-22 17:13:11 +00:00</p>
+   </div>
+   <details><summary>Table of Contents</summary>
+    <ul class="toc">
+     <li>
+      <ul class="toc">
+       <li>
+        <ul class="toc">
+         <li>
+          <a class="toc-link toc-item-2" href="#the-current-module">
+           The Current Module
+          </a>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#jobs-in-ocurrent">
+             Jobs in OCurrent
+            </a>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <ul class="toc">
+         <li>
+          <a class="toc-link toc-item-2" href="#ocurrent-caching">
+           OCurrent Caching
+          </a>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#the-key-module">
+             The Key Module
+            </a>
+           </li>
+          </ul>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#the-value-module">
+             The Value Module
+            </a>
+           </li>
+          </ul>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#the-build-function">
+             The Build Function
+            </a>
+           </li>
+          </ul>
+         </li>
+        </ul>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </details>
+   <p>In the <a href="/introduction-to-incrementalism-in-ocurrent">opening section</a> we looked at foundational building blocks upon which OCurrent is built. In this section we will explore in more depth the interface must users will interact with when building their own OCurrent plugins including:</p>
+<ul>
+<li>Caching
+</li>
+<li>Monitoring
+</li>
+<li>Terms
+</li>
+</ul>
+<p>Each of these will then be used when we build the plugin in the next part of this tutorial.</p>
+<h2 id="the-current-module">The Current Module</h2>
+<p>The <code>Current</code> module provides a lot of the functionality for glueing different parts of your plugin together. For example the <code>map</code> function.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">require</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">current</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current</span><span class="ocaml-keyword">.</span><span class="ocaml-source">return</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> ?</span><span class="ocaml-source">label</span><span class="ocaml-keyword">:</span><span class="ocaml-support">string</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current</span><span class="ocaml-keyword">.</span><span class="ocaml-source">term</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-keyword">fun</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current</span><span class="ocaml-keyword">.</span><span class="ocaml-source">map</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'b</span><span class="ocaml-source">)</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'a</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current</span><span class="ocaml-keyword">.</span><span class="ocaml-source">term</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source"> </span><span class="ocaml-other">'b</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current</span><span class="ocaml-keyword">.</span><span class="ocaml-source">term</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-keyword">fun</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current</span><span class="ocaml-keyword">.</span><span class="ocaml-source">(</span><span class="ocaml-source">return</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">hello </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">|&gt;</span><span class="ocaml-source"> </span><span class="ocaml-source">map</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-source">(</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">^</span><span class="ocaml-source"> </span><span class="ocaml-source">)</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">world</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source">)</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-keyword-operator">-</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-support">string</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current</span><span class="ocaml-keyword">.</span><span class="ocaml-source">term</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">&lt;</span><span class="ocaml-source">abstr</span><span class="ocaml-keyword-operator">&gt;</span><span class="ocaml-source">
+</span></code></pre><h3 id="jobs-in-ocurrent">Jobs in OCurrent</h3>
+<p>A <code>Job.t</code> in OCurrent is exactly that, a task to be run. It carries about with it a lot of additional information for OCurrent to use such as its <code>priority</code> and its <code>start_time</code>.</p>
+<h2 id="ocurrent-caching">OCurrent Caching</h2>
+<p>Caching is an important aspects to OCurrent pipelines. It can help reduce the amount of recomputation needed even if some input changes and it can really help for complex or lengthy operations (like pulling big docker images). In order to cache things we need to use the <code>Make</code> functor.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">require</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">current.cache</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-source"> 
+</span><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">show</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_cache</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Make</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Make</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">functor</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">B</span><span class="ocaml-source"> </span><span class="ocaml-keyword">:</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_cache</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">S</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">BUILDER</span><span class="ocaml-source">)</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">-&gt;</span><span class="ocaml-source">
+</span><span class="ocaml-source">    </span><span class="ocaml-keyword">sig</span><span class="ocaml-source">
+</span><span class="ocaml-source">      val get :
+</span><span class="ocaml-source">        ?schedule:Current_cache.Schedule.t -&gt;
+</span><span class="ocaml-source">        B.t -&gt; B.Key.t -&gt; B.Value.t Current.Primitive.t
+</span><span class="ocaml-source">      val invalidate : B.Key.t -&gt; unit
+</span><span class="ocaml-source">      val reset : db:bool -&gt; unit
+</span><span class="ocaml-source">    </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span></code></pre><p>From the signature of the returned module you can see we get something very cache-like with function for resetting, invalidating and getting items from our cache. But in order to have our cache we need to provide a builder.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">show</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_cache</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">S</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">BUILDER</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-keyword">type</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">BUILDER</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">sig</span><span class="ocaml-source">
+</span><span class="ocaml-source">    type t
+</span><span class="ocaml-source">    val id : string
+</span><span class="ocaml-source">    module Key : Current_cache.S.WITH_DIGEST
+</span><span class="ocaml-source">    module Value : Current_cache.S.WITH_MARSHAL
+</span><span class="ocaml-source">    val build : t -&gt; Current.Job.t -&gt; Key.t -&gt; Value.t Current.or_error Lwt.t
+</span><span class="ocaml-source">    val pp : Key.t Fmt.t
+</span><span class="ocaml-source">    val auto_cancel : bool
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span></code></pre><p>There are different aspects to our builder than we can see. Firstly, some configuration parameters:</p>
+<ul>
+<li><code>id</code> -- a unique <code>id</code> for our <code>BUILDER</code>
+</li>
+<li><code>auto_cancel</code> -- a parameter which allows you to specify if an operation should be cancelled if no longer needed (<code>true</code>) or if only a user should be able to do it (<code>false</code>).
+</li>
+</ul>
+<p>The <code>pp</code> function is just the standard <code>Format</code> style pretty-printing function.</p>
+<p>The more interesting parts are the modules <code>Key</code> and <code>Value</code> and finally the <code>build</code> function.</p>
+<h3 id="the-key-module">The Key Module</h3>
+<p>The Key module is used for looking up your entry in the cache much like a Hashtable. It must look like a <code>S.WITH_DIGEST</code>.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">show</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_cache</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">S</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">WITH_DIGEST</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-keyword">type</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">WITH_DIGEST</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-keyword">sig</span><span class="ocaml-source"> type t val digest : t -&gt; string </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span></code></pre><p>Which is a very simple module with one function that takes a key value (<code>t</code>) and returns a unique string identifying that value in the cache.</p>
+<p>Often a nice way to do this is to convert you OCaml type to JSON with something like <a href="https://github.com/ocaml-ppx/ppx_deriving_yojson">ppx_deriving_yojson</a>.</p>
+<h3 id="the-value-module">The Value Module</h3>
+<p>The value module is whatever the cache is storing and must look like a <code>S.WITH_MARSHAL</code>.</p>
+<pre><code><span class="ocaml-keyword">#</span><span class="ocaml-source"> </span><span class="ocaml-keyword">#</span><span class="ocaml-source">show</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Current_cache</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">S</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">WITH_MARSHAL</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-keyword">type</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">WITH_MARSHAL</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">sig</span><span class="ocaml-source"> type t val marshal : t -&gt; string val unmarshal : string -&gt; t </span><span class="ocaml-keyword">end</span><span class="ocaml-source">
+</span></code></pre><p>Another relatively simple module but this time two functions are necessary -- <code>marshal</code> and <code>unmarshal</code>. You can think of these functions like <code>save</code> and <code>load</code>. You want to be able to turn your value type <code>t</code> into a <code>string</code> and then reverse the process. The idea being <code>unmarshal (marshal t) = t</code>.</p>
+<h3 id="the-build-function">The Build Function</h3>
+<p>Hopefully by exploring these two functions you get a good understanding of how the caching is going to work. The last step is the build function. This takes some configuration parameters but is mostly about generating a value from a key.</p>
+<p>Let's have a look at how the <code>Git</code> plugin does it -- see <a href="https://github.com/ocurrent/ocurrent/blob/b5391e4ad2c1fd5c4de79665bd536559cec40d0d/plugins/git/current_git.ml#L22">the repository here</a>.</p>
+<p>Ignore the code for working out the <code>level</code> for now, you see that a task is given to the supplied OCurrent <code>job</code>. The first thing it does is lock the repository that the <code>key</code> refers too. Then it tries to make a local copy if one does not already exist, it does so using <code>git_clone</code>. It then ensures the right <code>commit</code> is available, if not then it will be fetched before finally returning the commit.</p>
+
+   <ol></ol>
+  </div>
+            
+            
+          
+ </body>
+</html>

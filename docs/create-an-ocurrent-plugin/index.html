@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
- <head><title>Build a website deployer with OCurrent</title>
-  <meta charset="UTF-8"/>
+ <head><title>Create an OCurrent Plugin</title><meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="Sesame: simple static site generator"/>
   <link rel="stylesheet" href="/styles.css"/>
@@ -64,18 +63,18 @@
    </ul>
   </div>
   <div class="content">
-   <div class="meta"><h2>Build a website deployer with OCurrent</h2></div>
-   <p>This is a tutorial on how to use existing OCurrent plugins to build a continuous deployment service for your website. It will be relatively simple, but the concepts should transfer nicely.</p>
-<p>We will learn to:</p>
+   <div class="meta"><h2>Create an OCurrent Plugin</h2></div>
+   <p>Plugins for OCurrent are useful modules which provide a specific functionality using the underlying OCurrent primitives in order to do things like caching and automatic component generation.</p>
+<p>If you have worked through the other sections may already be familiar with some of the like:</p>
 <ul>
-<li>Monitor and pull in our site content from Github
+<li>The <code>Docker</code> plugin for pulling, building and running docker images.
 </li>
-<li>Configure an environment in the pipeline to build the site
+<li>The <code>Github</code> plugin for authenticating and using the Github API (the newer <em>GraphQL</em> one).
 </li>
-<li>Build and deploy the site using Docker (in reality it will be more of a development type server)
+<li>The <code>Git</code> plugin for working with git repositories and being able to <code>fetch</code> from them.
 </li>
 </ul>
-<p>To show the flexibility of this approach the site won't even be in OCaml, it will be a Gatsby website which uses Javascript and Node. But for good measure, we'll use <a href="https://github.com/mirage/ocaml-cohttp">cohttp-server-lwt</a> as the web-server to run our static site just to show more flexibility.</p>
+<p>Here we will look at (a) the underlying primitives OCurrent exposes for building plugins and (b) building a <a href="https://about.gitlab.com/">Gitlab</a> plugin.</p>
 
   </div>
             
