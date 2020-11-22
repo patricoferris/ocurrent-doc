@@ -7,8 +7,11 @@ pages:
   description: An introduction to practical uses of the eDSL for OCurrent
 - title: A High Level Interface
   description: The high-level OCurrent interface for building pipelines
+- title: Using plugins
+  description: The current set of plugins available through OCurrent
 
 ---
+
 
 
 Welcome to the beginning of theses docs on building things with OCurrent -- an OCaml DSL for generating incremental pipelines to build... well almost anything. This introductory chapter will give a solid understanding of the foundation upon which the OCurrent tower stands including: 

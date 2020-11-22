@@ -24,6 +24,11 @@ p code {
   background: lemonchiffon;
 }
 
+li code {
+  border-radius: 5px;
+  background: lemonchiffon;
+}
+
 .content {
   max-width: 90ex;
   font-size: 1.03em;

@@ -44,3 +44,5 @@ module CInt :
   end
 ```
 
+From the signature you can also see we need a way to work with `Current_term.Output.t`s --  
+

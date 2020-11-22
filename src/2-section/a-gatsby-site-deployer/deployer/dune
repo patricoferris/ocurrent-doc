@@ -1,0 +1,4 @@
+(executable
+ (name deployer)
+ (public_name deployer)
+ (libraries current_github current_docker cmdliner))
