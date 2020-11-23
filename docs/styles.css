@@ -1,11 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
-
 html, body {
-  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
 }
 
 code {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'courier', monospace;
 }
 
 pre {
@@ -36,7 +34,7 @@ li code {
   margin-right: 4ex;
   margin-top: 40px;
   margin-bottom: 50px;
-  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   line-height: 1.5;
 }
 
@@ -65,8 +63,10 @@ p, li {
   padding-right: 2ex;
 }
 
+
 .nav .title a {
   text-decoration: none;
+  color: inherit;
 }
 
 .nav ul {
@@ -83,6 +83,11 @@ p, li {
 .nav ul li {
   font-weight: 700;
   padding-left: 12px;
+  color: rgb(112, 112, 112);
+}
+
+.nav ul li:hover {
+  color: black;
 }
 
 .nav ul li ul li {
@@ -105,7 +110,7 @@ p, li {
 
 /* Syntax Highlighting */
 span[class*='keyword'] {
-  color: #fb4934
+  color: #ffaca3
 }
 
 span[class*='constant'] {

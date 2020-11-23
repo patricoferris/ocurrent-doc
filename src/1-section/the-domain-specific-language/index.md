@@ -6,7 +6,7 @@ authors:
 date: 2020-11-20 13:38:10 +00:00
 toc: true
 resources: 
-  - title: Adaptive Function Programming
+  - title: Adaptive Functional Programming
     description: The paper that the OCurrent eDSL for incrementalism is based on 
     url: https://www.cs.cmu.edu/~guyb/papers/popl02.pdf
 ---
