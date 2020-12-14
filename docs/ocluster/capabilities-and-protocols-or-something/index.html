@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+ <head><title>Capabilities and protocols or something</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="A look into Capnp"/>
+  <link rel="stylesheet" href="/styles.css"/>
+ </head>
+ <body>
+             
+  <div class="nav"><h1 class="title"><a href="/">OCurrent Doc</a></h1>
+   <ul>
+    <li>
+     <a href="/introduction-to-incrementalism-in-ocurrent">
+      Introduction to incrementalism in OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/the-domain-specific-language"
+        >The Domain Specific Language
+       </a>
+      </li>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/a-high-level-interface"
+        >A High Level Interface
+       </a>
+      </li>
+      <li>
+       <a href="/introduction-to-incrementalism-in-ocurrent/using-plugins">
+        Using plugins
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li>
+     <a href="/build-a-website-deployer-with-ocurrent">
+      Build a website deployer with OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/build-a-website-deployer-with-ocurrent/a-gatsby-site-deployer">
+        A Gatsby Site Deployer
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/create-an-ocurrent-plugin">Create an OCurrent Plugin</a>
+     <ul>
+      <li>
+       <a href="/create-an-ocurrent-plugin/basic-ocurrent-primitives">
+        Basic OCurrent Primitives
+       </a>
+      </li>
+      <li>
+       <a href="/create-an-ocurrent-plugin/build-a-gitlab-ocurrent-plugin">
+        Build a Gitlab OCurrent Plugin
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/ocluster">OCluster</a>
+     <ul>
+      <li>
+       <a href="/ocluster/capabilities-and-protocols-or-something">
+        Capabilities and protocols or something
+       </a>
+      </li>
+     </ul>
+    </li><li><a href="/obuilder">OBuilder</a><ul></ul></li>
+   </ul>
+  </div>
+  <div class="content">
+   <div class="meta"><h2>Capabilities and protocols or something</h2>
+    <p> By Patrick Ferris on 2020-12-04 12:27:04 +00:00</p>
+   </div>
+   <details><summary>Table of Contents</summary>
+    <ul class="toc">
+     <li>
+      <ul class="toc">
+       <li>
+        <ul class="toc">
+         <li class="toc-li">
+          <a class="toc-link toc-item-2" href="#remote-procedure-calls">
+           Remote Procedure Calls
+          </a>
+         </li>
+        </ul>
+        <ul class="toc">
+         <li>
+          <a class="toc-link toc-item-2" href="#cap'n-proto-schema">
+           Cap'n Proto Schema
+          </a>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#cap'n-proto-in-ocaml">
+             Cap'n Proto in OCaml
+            </a>
+           </li>
+          </ul>
+         </li>
+        </ul>
+        <ul class="toc">
+         <li class="toc-li">
+          <a class="toc-link toc-item-2" href="#cerealisation">Cerealisation
+          </a>
+         </li>
+        </ul>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </details>
+   <p>Almost everything in the OCurrent world communicates using <a href="https://capnproto.org/">Cap'n Proto</a>. The only reference to why it is called this was from <a href="https://news.ycombinator.com/item?id=12471266">this hackernews thread</a>.</p>
+<blockquote>
+<p>Or you can also think of it as &quot;Cap-and-Proto&quot;. Which is an intentional pun (&quot;capabilities and protocols&quot;, or something).</p>
+</blockquote>
+<p>From the introduction we get a &quot;jargon-rich&quot; description of what we're dealing with:</p>
+<blockquote>
+<p>Cap’n Proto is an insanely fast data interchange format and capability-based RPC system. Think JSON, except binary.</p>
+</blockquote>
+<p>So let's start with RPC.</p>
+<h2 id="remote-procedure-calls">Remote Procedure Calls</h2>
+<p>Typically when thinking of two communicating devices, we think of a request and response framework. You ask a webserver for a web-page and it responds. RPC wants the programmer (or whoever) to <em>invoke</em> the <em>procedure</em> on the other machine.</p>
+<p>The RPC system sits between the caller and the callee marshalling (encoding) and un-marshalling (decoding) arguments and return values. Some programming languages have their own internal RPC system (like Java's remote method invocation). More commonly there are protocol specifications (gRPC, Cap'n Proto etc.) that act as a platform-agnostic scheme to perform RPC regardless of where you are running (OS or programming language).</p>
+<p>Martin Kleppmann does a great job <a href="https://www.youtube.com/watch?v=S2osKiqQG9s">explaining RPC systems</a> in a series of undergraduate lectures.</p>
+<h2 id="cap'n-proto-schema">Cap'n Proto Schema</h2>
+<p>The Cap'n Proto schema is used to describe the layout of data. Unlike JSON, the schema is strongly-typed and not self-describing. Strongly-typed refers to the inability to implicitly convert between unrelated types i.e. no <code>&quot;hello&quot; + 3</code>. Non self-describing means we need a schema to understand the structure.</p>
+<p><a href="https://capnproto.org/language.html">The schema section of Cap'n Proto</a> does a perfect job of describing in great detail all of the different parts of its specification. Here's an example from a file called <code>schema.capnp</code>:</p>
+<!-- $MDX file=./example/schema.capnp -->
+<pre><code>@0xd7de9e0850af18b2; 
+# A unique identification string
+
+struct Config {
+  id @0 : Text = &quot;default_id&quot;; # field with default value
+  workers @1 : Int8;
+  port @2 : Int16; #max 65535 ports
+}
+</code></pre>
+<p>The <code>@n</code> tags show you the protocol has evolved over time with each number field incrementing the count. Each field of the struct is also given a type from <a href="https://capnproto.org/language.html#built-in-types">the built-in</a> types. We won't look into everything that can be defined here, but instead move on to the OCaml mapping.</p>
+<p>For a real-world example, have a look at <a href="https://github.com/ocurrent/ocluster/blob/master/api/schema.capnp">OCluster's API schema</a>.</p>
+<h3 id="cap'n-proto-in-ocaml">Cap'n Proto in OCaml</h3>
+<p>Thanks to <a href="https://github.com/capnproto/capnp-ocaml">@pelzlpj</a> there are OCaml &quot;bindings&quot; to manipulate Cap'n Proto messages in OCaml. From a schema, the relevant source can be generated using <code>capnp compiler -o ocaml</code>. As will be described later, this build command is implemented as a custom rule in the dune file.</p>
+<pre><code class="language-bash">$ cat example/schema.mli
+[@@@ocaml.warning &quot;-27-32-37-60&quot;]
+
+type ro = Capnp.Message.ro
+type rw = Capnp.Message.rw
+
+module type S = sig
+  module MessageWrapper : Capnp.RPC.S
+  type 'cap message_t = 'cap MessageWrapper.Message.t
+  type 'a reader_t = 'a MessageWrapper.StructStorage.reader_t
+  type 'a builder_t = 'a MessageWrapper.StructStorage.builder_t
+
+
+  module Reader : sig
+    type array_t
+    type builder_array_t
+    type pointer_t = ro MessageWrapper.Slice.t option
+    val of_pointer : pointer_t -&gt; 'a reader_t
+    module Config : sig
+      type struct_t = [`Config_ac6bb9103d76a422]
+      type t = struct_t reader_t
+      val has_id : t -&gt; bool
+      val id_get : t -&gt; string
+      val workers_get : t -&gt; int
+      val port_get : t -&gt; int
+      val of_message : 'cap message_t -&gt; t
+      val of_builder : struct_t builder_t -&gt; t
+    end
+  end
+
+  module Builder : sig
+    type array_t = Reader.builder_array_t
+    type reader_array_t = Reader.array_t
+    type pointer_t = rw MessageWrapper.Slice.t
+    module Config : sig
+      type struct_t = [`Config_ac6bb9103d76a422]
+      type t = struct_t builder_t
+      val has_id : t -&gt; bool
+      val id_get : t -&gt; string
+      val id_set : t -&gt; string -&gt; unit
+      val workers_get : t -&gt; int
+      val workers_set_exn : t -&gt; int -&gt; unit
+      val port_get : t -&gt; int
+      val port_set_exn : t -&gt; int -&gt; unit
+      val of_message : rw message_t -&gt; t
+      val to_message : t -&gt; rw message_t
+      val to_reader : t -&gt; struct_t reader_t
+      val init_root : ?message_size:int -&gt; unit -&gt; t
+      val init_pointer : pointer_t -&gt; t
+    end
+  end
+end
+
+module MakeRPC(MessageWrapper : Capnp.RPC.S) : sig
+  include S with module MessageWrapper = MessageWrapper
+
+  module Client : sig
+  end
+
+  module Service : sig
+  end
+end
+
+module Make(M : Capnp.MessageSig.S) : module type of MakeRPC(Capnp.RPC.None(M))
+</code></pre>
+<p>Let's deconstruct that a bit. Our schema is defined within the main <code>S</code> module. Using the <code>MessageWrapper</code> module, the:</p>
+<blockquote>
+<p>generated code is functorized over the underlying message format</p>
+</blockquote>
+<p>which is made clear by the <code>MakeRPC</code> functor and the use of that module in <code>S</code>. There are two main modules that <code>S</code> exposes as structs are mapped to modules:</p>
+<ol>
+<li><code>Reader</code> -- provides read-only operations over the struct
+</li>
+<li><code>Builder</code> -- provides read-write operations over the struct
+</li>
+</ol>
+<p>To access our schema in OCaml code, it is conventional to generate it at build-time using dune.</p>
+<!-- $MDX file=example/dune -->
+<pre><code>(executable
+ (name main)
+ (flags
+  (:standard -w -53-55))
+ (libraries capnp-rpc-lwt))
+
+(rule
+ (targets schema.ml schema.mli)
+ (deps schema.capnp)
+ (action
+  (run capnp compile -o %{bin:capnpc-ocaml} %{deps})))
+</code></pre>
+<p>Here we have a very simple custom rule to generate the <code>schema.ml{i}</code> files from the <code>.capnp</code> file using the compiler. Note as well the need for the warning flags to be disabled. This is because <code>capnp-ocaml</code> tries to do inlining that only works on a <code>+flambda</code> branch of the compiler.</p>
+<!-- $MDX file=example/main.ml -->
+<pre><code><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Make</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">Capnp</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">BytesMessage</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span><span class="ocaml-source">
+</span><span class="ocaml-keyword">let</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">s</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Builder</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Config</span><span class="ocaml-keyword">.</span><span class="ocaml-source">init_root</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-source">print_endline</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Builder</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Config</span><span class="ocaml-keyword">.</span><span class="ocaml-source">id_get</span><span class="ocaml-source"> </span><span class="ocaml-source">s</span><span class="ocaml-source">)</span><span class="ocaml-source">
+</span></code></pre><p>Which produces the <code>default_id</code> we specified from our capnp file.</p>
+<pre><code class="language-bash">$ example/main.exe
+default_id
+</code></pre>
+<h2 id="cerealisation">Cerealisation</h2>
+<p>Pun intended. Serialisation... coming soon...</p>
+
+   <ol></ol>
+  </div>
+            
+            
+          
+ </body>
+</html>
