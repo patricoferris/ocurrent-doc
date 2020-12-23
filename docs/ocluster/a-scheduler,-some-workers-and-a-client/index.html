@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+ <head><title>A scheduler, some workers and a client</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description"
+   content="An indepth look at the how the OCluster infrastructure works"/>
+  <link rel="stylesheet" href="/styles.css"/>
+ </head>
+ <body>
+             
+  <div class="nav"><h1 class="title"><a href="/">OCurrent Doc</a></h1>
+   <ul>
+    <li>
+     <a href="/introduction-to-incrementalism-in-ocurrent">
+      Introduction to incrementalism in OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/the-domain-specific-language"
+        >The Domain Specific Language
+       </a>
+      </li>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/a-high-level-interface"
+        >A High Level Interface
+       </a>
+      </li>
+      <li>
+       <a href="/introduction-to-incrementalism-in-ocurrent/using-plugins">
+        Using plugins
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li>
+     <a href="/build-a-website-deployer-with-ocurrent">
+      Build a website deployer with OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/build-a-website-deployer-with-ocurrent/a-gatsby-site-deployer">
+        A Gatsby Site Deployer
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/create-an-ocurrent-plugin">Create an OCurrent Plugin</a>
+     <ul>
+      <li>
+       <a href="/create-an-ocurrent-plugin/basic-ocurrent-primitives">
+        Basic OCurrent Primitives
+       </a>
+      </li>
+      <li>
+       <a href="/create-an-ocurrent-plugin/build-a-gitlab-ocurrent-plugin">
+        Build a Gitlab OCurrent Plugin
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/ocluster">OCluster</a>
+     <ul>
+      <li>
+       <a href="/ocluster/capabilities-and-protocols-or-something">
+        Capabilities and protocols or something
+       </a>
+      </li>
+      <li>
+       <a href="/ocluster/a-scheduler,-some-workers-and-a-client">
+        A scheduler, some workers and a client
+       </a>
+      </li>
+     </ul>
+    </li><li><a href="/obuilder">OBuilder</a><ul></ul></li>
+   </ul>
+  </div>
+  <div class="content">
+   <div class="meta"><h2>A scheduler, some workers and a client</h2>
+    <p> By Patrick Ferris on 2020-12-23 18:41:13 +00:00</p>
+   </div>
+   <details><summary>Table of Contents</summary>
+    <ul class="toc">
+     <li>
+      <ul class="toc">
+       <li>
+        <ul class="toc">
+         <li class="toc-li">
+          <a class="toc-link toc-item-2" href="#a-typical-configuration">
+           A Typical Configuration
+          </a>
+         </li>
+        </ul>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </details>
+   <p>In this section we'll look at the infrastructure provided out-of-the-box by OCluster to build a distributed system using Capnp to tie all of the pieces together.</p>
+<p>At it's simplest, OCluster provides four main primitives to build a cluster:</p>
+<ul>
+<li>Scheduler: the scheduler handles accepting jobs, organising a fair queueing mechanism and dispatching jobs to pools and workers. When it starts up it also generates the <code>admin.cap</code> allowing someone to manage the cluster.
+</li>
+<li>Worker: a worker belongs to a pool (and will need access to the pool's <code>.cap</code> file, see the previous section) and will process jobs given to it.
+</li>
+<li>Admin: a service for managing lots of different aspects of the cluster.
+</li>
+<li>Client: clients can submit jobs to the scheduler, but the admin must first generate a <code>submission.cap</code> and add the client. When submitting jobs the client specifies which pool it wants along with other things like a cache hint. We'll look at these more closely soon.
+</li>
+</ul>
+<h2 id="a-typical-configuration">A Typical Configuration</h2>
+<p><a style="border-bottom: none" href="/img/ocluster-v0.png"><img width="800" alt="" src="/img/ocluster-v0.png"/></a></p>
+<p>Above you can see a depiction of a typical OCluster configuration, following the numbers we explain the process of running jobs given this pre-configured setup.</p>
+<ol>
+<li>A client (one of perhaps many) submits a job to the scheduler providing the required details that a job needs.
+</li>
+<li>The scheduler implements some form of fair-queuing mechanism as well as ensuring the job will be sent to the right pool.
+</li>
+<li>A worker in a pool receives a job to run -- the logs are streamed back to the client.
+</li>
+<li>An administrative client can watch over all of these different aspects.
+</li>
+</ol>
+
+   <ol></ol>
+  </div>
+            
+            
+          
+ </body>
+</html>

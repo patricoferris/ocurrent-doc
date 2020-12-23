@@ -4,8 +4,11 @@ description: Capnp powered distributed CI builds
 pages:
 - title: Capabilities and protocols or something
   description: A look into Capnp
+- title: A scheduler, some workers and a client
+  description: An indepth look at the how the OCluster infrastructure works
 
 ---
+
 
 
 In this section (and the following *OBuilder* section) we'll look at two useful libraries that OCurrent provides to take your pipelines to the next level.  
