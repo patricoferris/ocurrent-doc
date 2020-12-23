@@ -5,7 +5,10 @@ authors:
 - Patrick Ferris
 date: 2020-12-04 12:27:04 +00:00
 toc: true
-resources: []
+resources: 
+  - title: High Performance Browser Networking
+    description: Ilya Grigorik's fantastic book covering many aspects of internet/networking protocols inluding TLS, HTTP/2, WebRTC etc. 
+    url: https://hpbn.co/
 ---
 
 Almost everything in the OCurrent world communicates using [Cap'n Proto](https://capnproto.org/). The only reference to why it is called this was from [this hackernews thread](https://news.ycombinator.com/item?id=12471266).
@@ -147,23 +150,44 @@ To access our schema in OCaml code, it is conventional to generate it at build-t
 
 Here we have a very simple custom rule to generate the `schema.ml{i}` files from the `.capnp` file using the compiler. Note as well the need for the warning flags to be disabled. This is because `capnp-ocaml` tries to do inlining that only works on a `+flambda` branch of the compiler. 
 
-<!-- $MDX file=example/main.ml -->
+<!-- $MDX file=example/main.ml,part=0 -->
 ```ocaml
 module Schema = Schema.Make (Capnp.BytesMessage)
 
 let () =
   let s = Schema.Builder.Config.init_root () in
+  print_endline (Schema.Builder.Config.id_get s);
+  Schema.Builder.Config.id_set s "new_id";
   print_endline (Schema.Builder.Config.id_get s)
 ```
 
-Which produces the `default_id` we specified from our capnp file. 
-
+This small example uses the generated `schema.ml` module to produce the `default_id` we specified from our capnp file. But we can also set the `id` just as easily and print the new one. 
 
 ```bash
 $ example/main.exe
 default_id
+new_id
 ```
 
-## Cerealisation 
+## Capnp RPC 
 
-Pun intended. Serialisation... coming soon... 
+### Time-travelling with Promises
+
+Now that we've covered the basics of Capnp schema generation we can move on to the [RPC protocol](https://capnproto.org/rpc.html). One of the big selling-points is that Capnp-RPC is a *time-travelling RPC* (or promise-pipelining). If you are familiar with OCaml's Lwt library (or promises in Javascript) you should be familiar with the idea of promises. 
+
+As a recap, promises are potentially pending results of computation. The neat thing about them is that you can carry on your computation (building up a series of callbacks) even without the actual data. In this way you can achieve a form of concurrency. Capnp-RPC provides a similar idea when results and arguments of RPC calls stay contained within the same client-server connection.
+
+In addition to this, Capnp-RPC uses *promise pipelining*. In essence we can call further methods of unresolved promises in a [pipeline](http://www.erights.org/elib/distrib/pipeline.html) fashion without incurring the cost of extra round-trip times. 
+
+### Capabilities 
+
+Most people are familiar with the idea of capabilities from access control matrices (or similar). Here, the idea is quite simple. Our system is made up of a set of subjects `S`, a set of objects `O` and a set of access rights `A`. A capability associates a subset of access rights to a particular object `o` with a subject `s`. [Vitally](http://en.wikipedia.org/wiki/Capability-based_security): 
+
+> ... a capability-based ... system must use a capability to access an object 
+
+The interface described previously is in fact a capability -- it is both linked to some object and grants access to that object by nature of being able to call it. 
+
+### Capnp-RPC in OCluster
+
+We'll touch on this some more in later sections, but the main idea is that OCluster needs a method to communicate between machines (for example the scheduler and the workers). [Ilya Grigorik's High Performance Browser Networking book](https://hpbn.co/transport-layer-security-tls/) has a brilliant chapter on TLS. Communication happens over *Transport Layer Security* (TLS) but within the `.cap` files there are fingerprints and a secret. 
+

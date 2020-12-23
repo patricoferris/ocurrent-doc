@@ -103,9 +103,28 @@
          </li>
         </ul>
         <ul class="toc">
-         <li class="toc-li">
-          <a class="toc-link toc-item-2" href="#cerealisation">Cerealisation
-          </a>
+         <li><a class="toc-link toc-item-2" href="#capnp-rpc">Capnp RPC</a>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3"
+             href="#time-travelling-with-promises">
+             Time-travelling with Promises
+            </a>
+           </li>
+          </ul>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#capabilities">Capabilities
+            </a>
+           </li>
+          </ul>
+          <ul class="toc">
+           <li class="toc-li">
+            <a class="toc-link toc-item-3" href="#capnp-rpc-in-ocluster">
+             Capnp-RPC in OCluster
+            </a>
+           </li>
+          </ul>
          </li>
         </ul>
        </li>
@@ -234,20 +253,40 @@ module Make(M : Capnp.MessageSig.S) : module type of MakeRPC(Capnp.RPC.None(M))
   (run capnp compile -o %{bin:capnpc-ocaml} %{deps})))
 </code></pre>
 <p>Here we have a very simple custom rule to generate the <code>schema.ml{i}</code> files from the <code>.capnp</code> file using the compiler. Note as well the need for the warning flags to be disabled. This is because <code>capnp-ocaml</code> tries to do inlining that only works on a <code>+flambda</code> branch of the compiler.</p>
-<!-- $MDX file=example/main.ml -->
+<!-- $MDX file=example/main.ml,part=0 -->
 <pre><code><span class="ocaml-keyword">module</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Make</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">Capnp</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">BytesMessage</span><span class="ocaml-source">)</span><span class="ocaml-source">
 </span><span class="ocaml-source">
 </span><span class="ocaml-keyword">let</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source">
-</span><span class="ocaml-source">  </span><span class="ocaml-keyword">let </span><span class="ocaml-entity-name">s</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Builder</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Config</span><span class="ocaml-keyword">.</span><span class="ocaml-source">init_root</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-source">let </span><span class="ocaml-entity-name">s</span><span class="ocaml-source"> </span><span class="ocaml-keyword-operator">=</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Builder</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Config</span><span class="ocaml-keyword">.</span><span class="ocaml-source">init_root</span><span class="ocaml-source"> </span><span class="ocaml-constant-language">()</span><span class="ocaml-source"> </span><span class="ocaml-keyword">in</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-source">print_endline</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Builder</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Config</span><span class="ocaml-keyword">.</span><span class="ocaml-source">id_get</span><span class="ocaml-source"> </span><span class="ocaml-source">s</span><span class="ocaml-source">)</span><span class="ocaml-keyword">;</span><span class="ocaml-source">
+</span><span class="ocaml-source">  </span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Builder</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Config</span><span class="ocaml-keyword">.</span><span class="ocaml-source">id_set</span><span class="ocaml-source"> </span><span class="ocaml-source">s</span><span class="ocaml-source"> </span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-string-quoted">new_id</span><span class="ocaml-string-quoted">&quot;</span><span class="ocaml-keyword">;</span><span class="ocaml-source">
 </span><span class="ocaml-source">  </span><span class="ocaml-source">print_endline</span><span class="ocaml-source"> </span><span class="ocaml-source">(</span><span class="ocaml-constant-language">Schema</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Builder</span><span class="ocaml-keyword">.</span><span class="ocaml-constant-language">Config</span><span class="ocaml-keyword">.</span><span class="ocaml-source">id_get</span><span class="ocaml-source"> </span><span class="ocaml-source">s</span><span class="ocaml-source">)</span><span class="ocaml-source">
-</span></code></pre><p>Which produces the <code>default_id</code> we specified from our capnp file.</p>
+</span></code></pre><p>This small example uses the generated <code>schema.ml</code> module to produce the <code>default_id</code> we specified from our capnp file. But we can also set the <code>id</code> just as easily and print the new one.</p>
 <pre><code class="language-bash">$ example/main.exe
 default_id
+new_id
 </code></pre>
-<h2 id="cerealisation">Cerealisation</h2>
-<p>Pun intended. Serialisation... coming soon...</p>
+<h2 id="capnp-rpc">Capnp RPC</h2>
+<h3 id="time-travelling-with-promises">Time-travelling with Promises</h3>
+<p>Now that we've covered the basics of Capnp schema generation we can move on to the <a href="https://capnproto.org/rpc.html">RPC protocol</a>. One of the big selling-points is that Capnp-RPC is a <em>time-travelling RPC</em> (or promise-pipelining). If you are familiar with OCaml's Lwt library (or promises in Javascript) you should be familiar with the idea of promises.</p>
+<p>As a recap, promises are potentially pending results of computation. The neat thing about them is that you can carry on your computation (building up a series of callbacks) even without the actual data. In this way you can achieve a form of concurrency. Capnp-RPC provides a similar idea when results and arguments of RPC calls stay contained within the same client-server connection.</p>
+<p>In addition to this, Capnp-RPC uses <em>promise pipelining</em>. In essence we can call further methods of unresolved promises in a <a href="http://www.erights.org/elib/distrib/pipeline.html">pipeline</a> fashion without incurring the cost of extra round-trip times.</p>
+<h3 id="capabilities">Capabilities</h3>
+<p>Most people are familiar with the idea of capabilities from access control matrices (or similar). Here, the idea is quite simple. Our system is made up of a set of subjects <code>S</code>, a set of objects <code>O</code> and a set of access rights <code>A</code>. A capability associates a subset of access rights to a particular object <code>o</code> with a subject <code>s</code>. <a href="http://en.wikipedia.org/wiki/Capability-based_security">Vitally</a>:</p>
+<blockquote>
+<p>... a capability-based ... system must use a capability to access an object</p>
+</blockquote>
+<p>The interface described previously is in fact a capability -- it is both linked to some object and grants access to that object by nature of being able to call it.</p>
+<h3 id="capnp-rpc-in-ocluster">Capnp-RPC in OCluster</h3>
+<p>We'll touch on this some more in later sections, but the main idea is that OCluster needs a method to communicate between machines (for example the scheduler and the workers). <a href="https://hpbn.co/transport-layer-security-tls/">Ilya Grigorik's High Performance Browser Networking book</a> has a brilliant chapter on TLS. Communication happens over <em>Transport Layer Security</em> (TLS) but within the <code>.cap</code> files there are fingerprints and a secret.</p>
 
-   <ol></ol>
+   <ol>
+    <li><a href="https://hpbn.co/">High Performance Browser Networking</a>
+      - 
+     Ilya Grigorik's fantastic book covering many aspects of
+     internet/networking protocols inluding TLS, HTTP/2, WebRTC etc.
+    </li>
+   </ol>
   </div>
             
             
