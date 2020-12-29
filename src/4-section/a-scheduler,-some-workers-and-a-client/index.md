@@ -19,7 +19,9 @@ At it's simplest, OCluster provides four main primitives to build a cluster:
 
 ## A Typical Configuration
 
-<a style="border-bottom: none" href="/img/ocluster-v0.png"><img width="800" alt="" src="/img/ocluster-v0.png"/></a>
+<a style="border-bottom: none" href="/img/ocluster-v0.png">
+  <img width="800" alt="OCluster configuration diagram" src="/img/ocluster-v0.png"/>
+</a>
 
 Above you can see a depiction of a typical OCluster configuration, following the numbers we explain the process of running jobs given this pre-configured setup.
 

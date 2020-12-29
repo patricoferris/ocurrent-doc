@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+ <head><title>Platform agnostic build environments</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description"
+   content="A tool for managing build environments across platforms"/>
+  <link rel="stylesheet" href="/styles.css"/>
+ </head>
+ <body>
+             
+  <div class="nav"><h1 class="title"><a href="/">OCurrent Doc</a></h1>
+   <ul>
+    <li>
+     <a href="/introduction-to-incrementalism-in-ocurrent">
+      Introduction to incrementalism in OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/the-domain-specific-language"
+        >The Domain Specific Language
+       </a>
+      </li>
+      <li>
+       <a
+        href="/introduction-to-incrementalism-in-ocurrent/a-high-level-interface"
+        >A High Level Interface
+       </a>
+      </li>
+      <li>
+       <a href="/introduction-to-incrementalism-in-ocurrent/using-plugins">
+        Using plugins
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li>
+     <a href="/build-a-website-deployer-with-ocurrent">
+      Build a website deployer with OCurrent
+     </a>
+     <ul>
+      <li>
+       <a
+        href="/build-a-website-deployer-with-ocurrent/a-gatsby-site-deployer">
+        A Gatsby Site Deployer
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/create-an-ocurrent-plugin">Create an OCurrent Plugin</a>
+     <ul>
+      <li>
+       <a href="/create-an-ocurrent-plugin/basic-ocurrent-primitives">
+        Basic OCurrent Primitives
+       </a>
+      </li>
+      <li>
+       <a href="/create-an-ocurrent-plugin/build-a-gitlab-ocurrent-plugin">
+        Build a Gitlab OCurrent Plugin
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/ocluster">OCluster</a>
+     <ul>
+      <li>
+       <a href="/ocluster/capabilities-and-protocols-or-something">
+        Capabilities and protocols or something
+       </a>
+      </li>
+      <li>
+       <a href="/ocluster/a-scheduler,-some-workers-and-a-client">
+        A scheduler, some workers and a client
+       </a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/obuilder">OBuilder</a>
+     <ul>
+      <li>
+       <a href="/obuilder/platform-agnostic-build-environments">
+        Platform agnostic build environments
+       </a>
+      </li>
+     </ul>
+    </li>
+   </ul>
+  </div>
+  <div class="content">
+   <div class="meta"><h2>Platform agnostic build environments</h2>
+    <p> By Patrick Ferris on 2020-12-29 11:27:59 +00:00</p>
+   </div>
+   <details><summary>Table of Contents</summary>
+    <ul class="toc">
+     <li>
+      <ul class="toc">
+       <li>
+        <ul class="toc">
+         <li class="toc-li">
+          <a class="toc-link toc-item-2" href="#a-simplified-diagram">
+           A simplified diagram
+          </a>
+         </li>
+        </ul>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </details>
+   <p>Since it's inception, <a href="https://www.docker.com/">Docker</a> has taken the developer world by storm. Whether it's mimicking larger complex system interactions like applications talking to servers with docker-compose, CI testing with simple dockerfiles or development environments for websites there are many use cases for docker. Docker relies on something called <a href="https://github.com/moby/buildkit">BuildKit</a>. For OCluster this was too unreliable and not very flexible.</p>
+<p>OBuilder provides a high-level abstraction for build environments by providing an infrastructure centered on two key components: <strong>a snapshotting filesystem and an execution environment</strong>.</p>
+<ul>
+<li>Execution environment (sandbox): this is a means by which to take commands and run them in an isolated way. On Linux for example we can reuse the small, standalone execution environment of BuildKit -- <a href="https://github.com/opencontainers/runc">runc</a>.
+</li>
+<li>Snapshotting Filesystem: if you have ever run the <code>docker build</code> command you may be familiar with what looks like layering of file-systems on top of each other so if you change something in your dockerfile further down the line, cached snapshots of the filesystem are summoned instead of rebuilding everything from scratch. As of writing, OBuilder supports <code>zfs</code> and <code>btrfs</code> backends for implementing this.
+</li>
+</ul>
+<h2 id="a-simplified-diagram">A simplified diagram</h2>
+<a style="border-bottom: none; text-align: center;" href="/img/obuilder-v0.png">
+  <div><img width="600" alt="OBuilder configuration diagram" src="/img/obuilder-v0.png"/></div>
+</a>
+<p>In this simplified diagram there are two contexts, a current working directory of the user and OBuilder's context consisting of a sandbox and a store. In reality things are a little more complex than this, but it helps introduce the key concepts. OBuilder's typical execution is:</p>
+<ol>
+<li>After initial setup (creating the various store directories) the OBuilder context receives a <code>spec</code> file describing the job. Each operation (<code>run</code>, <code>from</code> etc.) is executed within the sandbox. Some of these have little actual effect like <code>env</code> which sets some environment variables. <code>run</code> and <code>copy</code> however have to actually be executed.
+</li>
+<li>For these operations, upon success, the state of the environment is stored by taking a snapshot and naming it the hash which is generated from the spec file and current operation.
+</li>
+<li>Sometimes you may be executing operations that have been done for. If this is the case then the <code>result</code> directory of the store should contain the associated hash and instead of replaying this, the state of the environment can be restored.
+</li>
+</ol>
+
+   <ol></ol>
+  </div>
+            
+            
+          
+ </body>
+</html>
