@@ -1,6 +1,8 @@
 OCurrent Pipeline Documentation
 -------------------------------
 
+**Very much a WIP and known to be slightly incorrect, see issues...**
+
 A centralised and thorough set of documents for OCurrent including: 
 
    - Basic incremental building using the eDSL
