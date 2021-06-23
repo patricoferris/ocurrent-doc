@@ -1,6 +1,6 @@
 ---
 title: A scheduler, some workers and a client
-description: An indepth look at the how the OCluster infrastructure works
+description: An in-depth look at the how the OCluster infrastructure works
 authors:
 - Patrick Ferris
 date: 2020-12-23 18:41:13 +00:00
@@ -19,13 +19,10 @@ At it's simplest, OCluster provides four main primitives to build a cluster:
 
 ## A Typical Configuration
 
-<a style="border-bottom: none" href="/img/ocluster-v0.png">
-  <img width="800" alt="OCluster configuration diagram" src="/img/ocluster-v0.png"/>
+<a style="border-bottom: none" href="/img/ocluster.svg">
+  <img width="800" alt="OCluster configuration diagram" src="/img/ocluster.svg"/>
 </a>
 
-Above you can see a depiction of a typical OCluster configuration, following the numbers we explain the process of running jobs given this pre-configured setup.
+Above you can see a depiction of a typical OCluster configuration. There's quite a lot to take in but the main sections are *clients*, *the scheduler*, *the admin* and *workers* organised into *pools*. 
 
-  1. A client (one of perhaps many) submits a job to the scheduler providing the required details that a job needs.
-  2. The scheduler implements some form of fair-queuing mechanism as well as ensuring the job will be sent to the right pool. 
-  3. A worker in a pool receives a job to run -- the logs are streamed back to the client. 
-  4. An administrative client can watch over all of these different aspects. 
+
